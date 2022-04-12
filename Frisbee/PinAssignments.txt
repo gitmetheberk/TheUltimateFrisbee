@@ -1,0 +1,17 @@
+Wire1 (I2C)
+- 17 SDA -> MPU SDA
+- 16 SCL -> MPU SCL
+
+Serial2
+- 8 TX -> GPS RX
+- 7 RX -> GPS TX
+
+Serial5
+- 20 TX -> Bluetooth RXD
+- 21 RX -> Bluetooth TXD
+
+Digital
+- 2 -> Red led
+- 4 -> Yellow led
+- 6 -> Green led
+- 3 -> Button
