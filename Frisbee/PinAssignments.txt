@@ -13,5 +13,12 @@ Serial5
 Digital
 - 2 -> Red led
 - 4 -> Yellow led
-- 6 -> Green led
+- 6 -> White led
 - 3 -> Button
+
+LED meaning
+Red_F: Error
+R: Not ready (boot)
+Y: Data cached (awaiting_transmission)
+W: Collecting
+W_F: Ready
