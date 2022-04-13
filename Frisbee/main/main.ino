@@ -212,39 +212,41 @@ void loop() {
       db.writeMPU(newMPUData);
 
       // GPS
-      char c = GPS.read();  // This line might not be needed
-      if (GPS.newNMEAreceived()) {
-        if (GPS.parse(GPS.lastNMEA())) 
-        {
-          // New parsed data, store
-          db.writeGPS(gps_data{
-            true,
-            (bool)GPS.fix,
-            GPS.satellites,
-            
-            GPS.latitudeDegrees,
-            GPS.longitudeDegrees,
-
-            GPS.speed,
-            GPS.altitude,
-
-            GPS.milliseconds,
-            GPS.seconds,
-            GPS.minute,
-            GPS.hour
-          });
-        }
-        else
-        {
-          // Parse failed
-          db.writeGPS(gps_data{false});
-        }
-      }
-      else
+      while(!GPS.newNMEAreceived())
       {
-        // No new data
-        db.writeGPS(gps_data{false});
+        GPS.read();
       }
+
+      GPS.parse(GPS.lastNMEA());
+
+      #if DEBUG_SERIAL
+      Serial.print(GPS.lastNMEA());
+      #endif
+
+      #if DEBUG_SERIAL
+      Serial.println("Second");
+      Serial.println(String(GPS.seconds));
+      #endif
+
+      // TODO Fix GPS signal receiving, read until nmea complete else continue
+      // but missing some level of buffering
+
+      db.writeGPS(gps_data{
+        true,
+        (bool)GPS.fix,
+        GPS.satellites,
+        
+        GPS.latitudeDegrees,
+        GPS.longitudeDegrees,
+  
+        GPS.speed,
+        GPS.altitude,
+  
+        GPS.milliseconds,
+        GPS.seconds,
+        GPS.minute,
+        GPS.hour
+      });
 
       // TODO Check for flight termination
       if (checkGyroEquivalence(newMPUData, lastMPUData))
@@ -324,13 +326,14 @@ void loop() {
         // Format: NEWDATA,HASFIX,SATELLITES,LATITUDE,LONGITUDE,SPEEDKNOTS,ALTITUDEFEET,MILLISECONDS,SECONDS,MINUTES,HOURS
         bluetooth.print("TRANSMITTING_GPS\n");
         gps_data gpsData;
+        
         for (int i = 0; i < currentSize; i++)
         {
           db.readGPS(i, gpsData);
 
           bluetooth.print(
-            gpsData.newData == 1 ? "1," : "0," +
-            gpsData.hasFix == 1 ? "1," : "0," +
+            String(gpsData.newData) + "," +
+            String(gpsData.hasFix) + "," +
             String(gpsData.satellites) + "," +
             
             String(gpsData.latitude, 6) + "," +
@@ -347,6 +350,7 @@ void loop() {
         }
 
         bluetooth.print("TRANSMISSION_END\n");
+        break;
       }
     }
     
