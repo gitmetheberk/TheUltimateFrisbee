@@ -6,12 +6,15 @@
 #include "enums.h"
 #include "pins.h"
 #include "config.h"
+#include "data.h"
 
 states state = boot;
 String errorMessage;
 
 Adafruit_GPS GPS(&GPS_Serial);
 Adafruit_MPU6050 MPU;
+
+dataBuffer db;
 
 void setup() {
   // Pin init
@@ -39,7 +42,6 @@ void setup() {
   }
 
   // MPU init
-  // TODO Calibration & range tuning
   if (!MPU.begin(MPU6050_I2CADDR_DEFAULT, &MPU_Wire))
   {
     errorMessage = "Could not establish serial connection with MPU";
@@ -95,12 +97,16 @@ void setup() {
     #endif
   }
   
+  db = dataBuffer();
   
   #if DEBUG_SERIAL
   Serial.println("Boot complete");
   #endif
 
-  delay(1000);
+  #if !GPS_FIX_REQUIRED
+  delay(2000);
+  #endif
+  
   state = ready_to_collect;
 }
 
@@ -110,7 +116,10 @@ void loop() {
     digitalWrite(LED_YELLOW, LOW);
     digitalWrite(LED_WHITE, LOW);
 
+#if DEBUG_SERIAL
+    Serial.print("An error occured: ");
     Serial.println(errorMessage);
+#endif
 
     digitalWrite(LED_RED, HIGH);
     delay(1000);
@@ -144,10 +153,22 @@ void loop() {
   else if (state == collecting_initial)
   {
     digitalWrite(LED_WHITE, HIGH);
-    
-    // Initialize data structures, move to collecting
-    // TODO
 
+    // TODO Include date in buffer reset
+    db.resetBuffer();
+    
+    state = collecting;
+  }
+  else if (state == collecting)
+  {
+    // TODO Write data collection functions
+    // TODO Log data until
+    //  a. Max data points reached
+    //  b. Altitude static, gyro relatively static
+
+
+
+    // TEMP
     delay(5000);
     state = awaiting_transmission;
   }
@@ -157,8 +178,9 @@ void loop() {
     digitalWrite(LED_YELLOW, HIGH);
 
     // Check for com established, delay 5 seconds, then transmit
-    // Restart if connection lost or receipt not acknowledged
+    // TODO
 
+    // TEMP
     delay(5000);
     state = ready_to_collect;
   }
