@@ -103,7 +103,36 @@ public:
     return dataPointsCollected;
   }
 
-  
+  dataDate getDate()
+  {
+    return date;
+  }
+
+  bool readMPU(unsigned int i, mpu_data &dataOut)
+  {
+    if (i >= dataPointsCollected)
+    {
+      return false;
+    }
+    else
+    {
+      dataOut = mpu_buffer[i];
+      return true;
+    }
+  }
+
+  bool readGPS(unsigned int i, gps_data &dataOut)
+  {
+    if (i >= dataPointsCollected)
+    {
+      return false;
+    }
+    else
+    {
+      dataOut = gps_buffer[i];
+      return true;
+    }
+  }  
 };
 
 

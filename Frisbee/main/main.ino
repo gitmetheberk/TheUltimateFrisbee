@@ -282,7 +282,73 @@ void loop() {
     digitalWrite(LED_WHITE, LOW);
     digitalWrite(LED_YELLOW, HIGH);
 
-    
+    while (true)
+    {
+      bluetooth.print("ComCheck\n");
+      String received = bluetooth.readString();
+      
+      if (received.startsWith("ComEstablished"))
+      {
+        bluetooth.print("TRANSMISSION_BEGIN\n");
+
+        // Transmit header information
+        // Format: DAY,MONTH,YEAR,DATAPOINTS\n
+        int currentSize = db.currentSize();
+        bluetooth.print(String(db.getDate().day) + "," +
+        String(db.getDate().month) + "," +
+        String(db.getDate().year) + "," +
+        String(currentSize) + "\n");
+
+        // Transmit MPU
+        // Format: ACCX, ACCY, ACCZ, GYROX, GYROY, GYROZ, TEMPC\n
+        bluetooth.print("TRANSMITTING_MPU\n");
+        mpu_data mpuData;
+        for (int i = 0; i < currentSize; i++)
+        {
+          db.readMPU(i, mpuData);
+
+          bluetooth.print(
+            String(mpuData.accX, 3) + "," +
+            String(mpuData.accY, 3) + "," +
+            String(mpuData.accZ, 3) + "," +
+            
+            String(mpuData.gyroX, 3) + "," +
+            String(mpuData.gyroY, 3) + "," +
+            String(mpuData.gyroZ, 3) + "," +
+
+            String(mpuData.tempC, 2) + "\n"
+          );
+        }
+      
+        // Transmit GPS
+        // Format: NEWDATA,HASFIX,SATELLITES,LATITUDE,LONGITUDE,SPEEDKNOTS,ALTITUDEFEET,MILLISECONDS,SECONDS,MINUTES,HOURS
+        bluetooth.print("TRANSMITTING_GPS\n");
+        gps_data gpsData;
+        for (int i = 0; i < currentSize; i++)
+        {
+          db.readGPS(i, gpsData);
+
+          bluetooth.print(
+            gpsData.newData == 1 ? "1," : "0," +
+            gpsData.hasFix == 1 ? "1," : "0," +
+            String(gpsData.satellites) + "," +
+            
+            String(gpsData.latitude, 6) + "," +
+            String(gpsData.longitude, 6) + "," +
+            String(gpsData.speedKnots, 4) + "," +
+            String(gpsData.altitudeFeet, 1) + "," +
+            
+            String(gpsData.milliseconds) + "," +
+            String(gpsData.seconds) + "," +
+            String(gpsData.minutes) + "," +
+            String(gpsData.hours) + "\n"
+          );
+          
+        }
+
+        bluetooth.print("TRANSMISSION_END\n");
+      }
+    }
     
     delay(5000);
     state = ready_to_collect;

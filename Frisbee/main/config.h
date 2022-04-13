@@ -16,7 +16,7 @@
 #define MIN_SATELLITES 3
 
 // MPU Config
-#define GYRO_EQUIVALENCE_DEADZONE 1
+#define GYRO_EQUIVALENCE_DEADZONE 0.1
 
 // MPU calibration
 #define MPU_OFFSET_AX 0.06
