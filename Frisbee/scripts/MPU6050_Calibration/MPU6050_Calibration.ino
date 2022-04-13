@@ -122,25 +122,25 @@ void loop() {
     Serial.println("Calibration results:");
     
     Serial.print("#define MPU_OFFSET_AX ");
-    Serial.println(sumAX / datapoints);
+    Serial.println(-sumAX / datapoints);
 
     Serial.print("#define MPU_OFFSET_AY ");
-    Serial.println(sumAY / datapoints);
+    Serial.println(-sumAY / datapoints);
 
     Serial.print("#define MPU_OFFSET_AZ ");
-    Serial.println(sumAZ / datapoints);
+    Serial.println(-sumAZ / datapoints);
 
     Serial.print("#define MPU_OFFSET_GX ");
-    Serial.println(sumGX / datapoints);
+    Serial.println(-sumGX / datapoints);
 
     Serial.print("#define MPU_OFFSET_GY ");
-    Serial.println(sumGY / datapoints);
+    Serial.println(-sumGY / datapoints);
 
     Serial.print("#define MPU_OFFSET_GZ ");
-    Serial.println(sumGZ / datapoints);
+    Serial.println(-sumGZ / datapoints);
 
     while (true) {delay(1000);}
   }
 
- delay(1000);
+ delay(250);
 }
