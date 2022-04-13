@@ -7,6 +7,7 @@
 #include "pins.h"
 #include "config.h"
 #include "data.h"
+#include "functions.cpp"
 
 states state = boot;
 String errorMessage;
@@ -15,6 +16,24 @@ Adafruit_GPS GPS(&GPS_Serial);
 Adafruit_MPU6050 MPU;
 
 dataBuffer db;
+
+bool checkGyroEquivalence(const mpu_data &l, const mpu_data &r)
+{
+  if (fabs(l.gyroX - r.gyroX) > GYRO_EQUIVALENCE_DEADZONE)
+  {
+    return false;
+  }
+  else if (fabs(l.gyroY - r.gyroY) > GYRO_EQUIVALENCE_DEADZONE)
+  {
+    return false;
+  }
+  else if (fabs(l.gyroZ - r.gyroZ) > GYRO_EQUIVALENCE_DEADZONE)
+  {
+    return false;
+  }
+
+  return true;
+}
 
 void setup() {
   // Pin init
@@ -61,9 +80,10 @@ void setup() {
     errorMessage = "Could not establish serial connection with GPS";
     return;
   }
-  
+
+  // TODO Tune GPS update rate
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ);
   GPS.sendCommand(PGCMD_ANTENNA);
 
   // TODO Tune time to wait for fix
@@ -91,6 +111,8 @@ void setup() {
       errorMessage = "Unable to establish GPS fix";
       return;
     }
+
+    // TODO Wait for min satellites
 
     #if DEBUG_SERIAL
     Serial.println("GPS fix established");
@@ -166,10 +188,93 @@ void loop() {
     //  a. Max data points reached
     //  b. Altitude static, gyro relatively static
 
+    unsigned short stationaryDatapoints = 0;
+    mpu_data lastMPUData = mpu_data{0,0,0,0,0,0,0};
 
+    while(!db.bufferFull())
+    {
+      // MPU
+      sensors_event_t a, g, temp;
+      MPU.getEvent(&a, &g, &temp);
 
-    // TEMP
-    delay(5000);
+      mpu_data newMPUData = mpu_data{
+        a.acceleration.x + MPU_OFFSET_AX,
+        a.acceleration.y + MPU_OFFSET_AY,
+        a.acceleration.z + MPU_OFFSET_AZ,
+
+        g.gyro.x + MPU_OFFSET_GX,
+        g.gyro.y + MPU_OFFSET_GY,
+        g.gyro.z + MPU_OFFSET_GZ,
+
+        temp.temperature
+      };
+      
+      db.writeMPU(newMPUData);
+
+      // GPS
+      char c = GPS.read();  // This line might not be needed
+      if (GPS.newNMEAreceived()) {
+        if (GPS.parse(GPS.lastNMEA())) 
+        {
+          // New parsed data, store
+          db.writeGPS(gps_data{
+            true,
+            (bool)GPS.fix,
+            GPS.satellites,
+            
+            GPS.latitudeDegrees,
+            GPS.longitudeDegrees,
+
+            GPS.speed,
+            GPS.altitude,
+
+            GPS.milliseconds,
+            GPS.seconds,
+            GPS.minute,
+            GPS.hour
+          });
+        }
+        else
+        {
+          // Parse failed
+          db.writeGPS(gps_data{false});
+        }
+      }
+      else
+      {
+        // No new data
+        db.writeGPS(gps_data{false});
+      }
+
+      // TODO Check for flight termination
+      if (checkGyroEquivalence(newMPUData, lastMPUData))
+      {
+        stationaryDatapoints  += 1;
+      }
+      else
+      {
+        stationaryDatapoints = 0;
+      }
+
+      if (stationaryDatapoints == FLIGHT_TERMINATION_TOLERANCE)
+      {
+        break;
+      }
+
+      lastMPUData = newMPUData;
+      db.incrementBuffer();
+
+      if (db.currentSize() <= INITIAL_DATA_POINTS)
+      {
+        delay(INITIAL_SAMPLING_DELAY);
+      }
+      else
+      {
+        delay(SAMPLING_DELAY);
+      }
+    }
+
+    delay(1000);
     state = awaiting_transmission;
   }
   else if (state == awaiting_transmission)
@@ -177,10 +282,8 @@ void loop() {
     digitalWrite(LED_WHITE, LOW);
     digitalWrite(LED_YELLOW, HIGH);
 
-    // Check for com established, delay 5 seconds, then transmit
-    // TODO
-
-    // TEMP
+    
+    
     delay(5000);
     state = ready_to_collect;
   }

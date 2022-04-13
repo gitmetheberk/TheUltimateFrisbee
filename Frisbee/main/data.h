@@ -1,17 +1,19 @@
 #ifndef data_h
 #define data_h
 
+#include "config.h"
+
 struct mpu_data
 {
-  short accX;
-  short accY;
-  short accZ;
+  float accX;
+  float accY;
+  float accZ;
 
-  short gyroX;
-  short gyroY;
-  short gyroZ;
+  float gyroX;
+  float gyroY;
+  float gyroZ;
 
-  double tempC;
+  float tempC;
 };
 
 struct dataDate
@@ -23,15 +25,17 @@ struct dataDate
 
 struct gps_data
 {
-  double latitude;
-  double lat;
-  double longitude;
-  double lon;
-  
-  double speed;
-  double altitude;
+  bool newData;
+  bool hasFix;
   int satellites;
+  
+  float latitude;
+  float longitude;
+  
+  float speedKnots;
+  float altitudeFeet;
 
+  short milliseconds;
   short seconds;
   short minutes;
   short hours;
@@ -44,13 +48,38 @@ private:
   dataDate date;
 
   // Data arrays
-  mpu_data mpu_buffer[MAX_DATA_POINTS];
-  gps_data gps_buffer[MAX_DATA_POINTS];
+  mpu_data mpu_buffer[MAX_BUFFER_SIZE];
+  gps_data gps_buffer[MAX_BUFFER_SIZE];
 
 public:
   dataBuffer()
   {
-    // Nothing to do really
+    // Could overwrite buffers, but there's no reason to
+    
+    dataPointsCollected = 0;
+    date.day = 0;
+    date.month = 0;
+    date.year = 0;
+  }
+
+  bool writeMPU(const mpu_data &d)
+  {
+    if (bufferFull()) {return false;}
+    mpu_buffer[dataPointsCollected] = d;
+    return true;
+  }
+
+  bool writeGPS(const gps_data &d)
+  {
+    if (bufferFull()) {return false;}
+    gps_buffer[dataPointsCollected] = d;
+    return true;
+  }
+
+  int incrementBuffer()
+  {
+    if (bufferFull()) {return MAX_BUFFER_SIZE;}
+    return dataPointsCollected++;
   }
 
   void resetBuffer()
@@ -66,7 +95,12 @@ public:
 
   bool bufferFull()
   {
-    return dataPointsCollected == MAX_DATA_POINTS;
+    return dataPointsCollected >= MAX_BUFFER_SIZE;
+  }
+
+  int currentSize()
+  {
+    return dataPointsCollected;
   }
 
   
