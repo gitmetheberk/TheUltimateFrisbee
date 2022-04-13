@@ -2,7 +2,7 @@
 #define config_h
 
 // Debug config
-#define DEBUG_SERIAL true
+#define DEBUG_SERIAL false
 #define GPS_FIX_REQUIRED false
 
 // General config
