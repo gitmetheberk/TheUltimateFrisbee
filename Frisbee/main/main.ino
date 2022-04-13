@@ -14,13 +14,13 @@ Adafruit_GPS GPS(&GPS_Serial);
 Adafruit_MPU6050 MPU;
 
 void setup() {
-  digitalWrite(LED_RED, HIGH);
-
   // Pin init
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_YELLOW, OUTPUT);
   pinMode(LED_WHITE, OUTPUT);
   pinMode(BUTTON, INPUT);
+  
+  digitalWrite(LED_RED, HIGH);
 
   #if DEBUG_SERIAL
   Serial.begin(9600);
@@ -99,6 +99,8 @@ void setup() {
   #if DEBUG_SERIAL
   Serial.println("Boot complete");
   #endif
+
+  delay(1000);
   state = ready_to_collect;
 }
 
