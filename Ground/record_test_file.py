@@ -4,11 +4,8 @@ import time
 interface = BluetoothReceiver()
 
 while True:
-    data = interface.collectData()
-
+    data = interface.recordTestFile("360_degree_rotation")
     if data is not None:
-        # if data is not none, you have received some data
-
         for List in data:
             print(List)
 

@@ -2,8 +2,9 @@ import serial
 
 # Config
 TEST_MODE = False
-DEMO_FILE = "Testfiles/"
+TEST_FILE = "stationary_noGPS.txt"
 PORT = 'COM5'
+
 
 class BluetoothReceiver:
     def collectData(self):
@@ -31,10 +32,35 @@ class BluetoothReceiver:
 
                     break
 
-            else:
-                # Test mode
+        else:
+            # Test mode
+            print("Loading incoming packet from file: {}".format(TEST_FILE))
+            with open("test_data/" + TEST_FILE, 'r') as file:
+                fileLine = "."
+                while fileLine:
+                    fileLine = file.readline()
+                    incomingPacket.append(fileLine[:-1].split(','))
 
-
+            incomingPacket = incomingPacket[:-1]
 
         return incomingPacket
 
+    def recordTestFile(self, filename):
+        if not filename.endswith(".txt"):
+            filename = filename + ".txt"
+
+        packet = self.collectData()
+
+        with open("test_data/" + filename, 'w') as file:
+            for line in packet:
+                if len(line) == 1:
+                    file.write(line[0] + "\n")
+                else:
+                    lineToWrite = ""
+                    for item in line:
+                        lineToWrite += item + ","
+
+                    lineToWrite = lineToWrite[:-1]
+                    file.write(lineToWrite + "\n")
+
+        return packet
