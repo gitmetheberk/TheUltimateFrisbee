@@ -1,0 +1,27 @@
+"Line by line representation of an incoming packet, each cell would be separated by a comma"											
+DAY	MONTH	YEAR	DATAPOINTS_TO_FOLLOW								
+TRANSMITTING_MPU											
+ACC_X (m/s^2)	ACC_Y (m/s^2)	ACC_Z (m/s^2)	GYRO_X (rad/s)	GYRO_Y (rad/s)	GYRO_Z (rad/s)	TEMP (Celsius)					
+TRANSMITTING_GPS											
+NEW_DATA (bool)	HAS_FIX (bool)	SATELLITES	LATITUDE (float)	LONGITUDE (float)	SPEED (knots)	ALTITUDE (feet)	GPS_MILLISECONDS	GPS_SECONDS	GPS_MINUTES	GPS_HOURS	"MILLIS (milliseconds since boot, reliable time measure)"
+TRANSMISSION_END											
+											
+Example packet (no GPS)											
+0	0	0	7								
+TRANSMITTING_MPU											
+-0.066	0.098	0	-0.011	0.036	-0.031	26.79					
+-0.082	0.163	0.033	0.006	0.005	-0.009	26.8					
+-0.037	0.22	0.023	-0.008	0.033	-0.006	26.79					
+-0.09	0.144	0.035	-0.001	0.026	-0.027	26.79					
+-0.102	0.172	0.076	0.014	-0.009	-0.007	26.8					
+-0.085	0.215	0.026	0.014	0.008	0	26.78					
+-0.104	0.213	0.004	-0.009	0.011	-0.021	26.79					
+TRANSMITTING_GPS											
+1	0	0	0	0	0	0	0	0	0	0	22760
+1	0	0	0	0	0	0	0	0	0	0	22863
+1	0	0	0	0	0	0	0	0	0	0	22965
+1	0	0	0	0	0	0	0	0	0	0	23091
+1	0	0	0	0	0	0	199	4	0	0	23193
+1	0	0	0	0	0	0	399	4	0	0	23296
+1	0	0	0	0	0	0	399	4	0	0	23398
+TRANSMISSION_END											
