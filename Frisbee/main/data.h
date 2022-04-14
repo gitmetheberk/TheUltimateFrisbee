@@ -39,6 +39,7 @@ struct gps_data
   short seconds;
   short minutes;
   short hours;
+  unsigned long millisTime;
 };
 
 class dataBuffer

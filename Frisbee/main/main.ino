@@ -83,7 +83,7 @@ void setup() {
 
   // TODO Tune GPS update rate
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_10HZ);
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ);
   GPS.sendCommand(PGCMD_ANTENNA);
 
   // TODO Tune time to wait for fix
@@ -178,6 +178,14 @@ void loop() {
 
     // TODO Include date in buffer reset
     db.resetBuffer();
+//    while(!GPS.newNMEAreceived())
+//    {
+//      GPS.read();
+//    }
+//
+//    GPS.parse(GPS.lastNMEA());
+//    
+//    setTime(GPS.hour, GPS.minute, GPS.seconds
     
     state = collecting;
   }
@@ -241,11 +249,13 @@ void loop() {
   
         GPS.speed,
         GPS.altitude,
-  
+
+        // Note: GPS time unreliable, use millis time for data sequencing
         GPS.milliseconds,
         GPS.seconds,
         GPS.minute,
-        GPS.hour
+        GPS.hour,
+        millis()
       });
 
       // TODO Check for flight termination
@@ -323,8 +333,7 @@ void loop() {
         }
       
         // Transmit GPS
-        // Format: NEWDATA,HASFIX,SATELLITES,LATITUDE,LONGITUDE,SPEEDKNOTS,ALTITUDEFEET,MILLISECONDS,SECONDS,MINUTES,HOURS
-        bluetooth.print("TRANSMITTING_GPS\n");
+        // Format: NEWDATA,HASFIX,SATELLITES,LATITUDE,LONGITUDE,SPEEDKNOTS,ALTITUDEFEET,MILLISECONDS,SECONDS,MINUTES,HOURS,MILLIS        bluetooth.print("TRANSMITTING_GPS\n");
         gps_data gpsData;
         
         for (int i = 0; i < currentSize; i++)
@@ -344,7 +353,8 @@ void loop() {
             String(gpsData.milliseconds) + "," +
             String(gpsData.seconds) + "," +
             String(gpsData.minutes) + "," +
-            String(gpsData.hours) + "\n"
+            String(gpsData.hours) + "," +
+            String(gpsData.millisTime) + "\n"
           );
           
         }
