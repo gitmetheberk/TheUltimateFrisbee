@@ -81,9 +81,8 @@ void setup() {
     return;
   }
 
-  // TODO Tune GPS update rate
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ);
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_10HZ);
   GPS.sendCommand(PGCMD_ANTENNA);
 
   // TODO Tune time to wait for fix
@@ -96,6 +95,14 @@ void setup() {
     const int loopLimit = 100;
     for (int loop = 0; loop < loopLimit; loop++)
     {
+      do {
+        GPS.read();
+        while (!GPS.newNMEAreceived())
+        {
+          GPS.read();
+        }
+      } while (!GPS.parse(GPS.lastNMEA()));
+
       if (GPS.fix)
       {
         break;
@@ -141,6 +148,11 @@ void loop() {
 #if DEBUG_SERIAL
     Serial.print("An error occured: ");
     Serial.println(errorMessage);
+#endif
+
+#if DEBUG_BLUETOOTH
+    bluetooth.print("An error occured: ");
+    bluetooth.println(errorMessage);
 #endif
 
     digitalWrite(LED_RED, HIGH);
@@ -220,24 +232,13 @@ void loop() {
       db.writeMPU(newMPUData);
 
       // GPS
-      while(!GPS.newNMEAreceived())
-      {
+      do {
         GPS.read();
-      }
-
-      GPS.parse(GPS.lastNMEA());
-
-      #if DEBUG_SERIAL
-      Serial.print(GPS.lastNMEA());
-      #endif
-
-      #if DEBUG_SERIAL
-      Serial.println("Second");
-      Serial.println(String(GPS.seconds));
-      #endif
-
-      // TODO Fix GPS signal receiving, read until nmea complete else continue
-      // but missing some level of buffering
+        while (!GPS.newNMEAreceived())
+        {
+          GPS.read();
+        }
+      } while (!GPS.parse(GPS.lastNMEA()));
 
       db.writeGPS(gps_data{
         true,
@@ -257,6 +258,10 @@ void loop() {
         GPS.hour,
         millis()
       });
+
+      #if DEBUG_SERIAL
+      Serial.println("GPS seconds: " + String(GPS.seconds));
+      #endif
 
       // TODO Check for flight termination
       if (checkGyroEquivalence(newMPUData, lastMPUData))

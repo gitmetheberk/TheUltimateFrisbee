@@ -3,16 +3,17 @@
 
 // Debug config
 #define DEBUG_SERIAL false
-#define GPS_FIX_REQUIRED false
+#define DEBUG_BLUETOOTH false
+#define GPS_FIX_REQUIRED true
 
 // General config
-#define MAX_BUFFER_SIZE 2500
+#define MAX_BUFFER_SIZE 5000
 #define INITIAL_SAMPLING_DELAY 100
 #define SAMPLING_DELAY 250
 #define INITIAL_DATA_POINTS 50
 #define FLIGHT_TERMINATION_TOLERANCE 8
 
-// GPS Config
+// GPS Config (TODO Not implemented)
 #define MIN_SATELLITES 3
 
 // MPU Config
