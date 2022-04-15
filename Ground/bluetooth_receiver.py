@@ -15,7 +15,10 @@ class BluetoothReceiver:
             try:
                 bluetoothSerialPort = serial.Serial(PORT, 9600)
             except:
+                print("Could not establish connection")
                 return None
+
+            print("Connection established")
 
             while True:
                 stringIn = bluetoothSerialPort.readline().decode()
