@@ -3,7 +3,7 @@
 
 // Debug config
 #define DEBUG_SERIAL false
-#define DEBUG_BLUETOOTH false
+#define DEBUG_BLUETOOTH true
 #define GPS_FIX_REQUIRED true
 
 // General config
