@@ -1,8 +1,8 @@
 import serial
 
 # Config
-TEST_MODE = False
-TEST_FILE = "stationary_noGPS.txt"
+TEST_MODE = True
+TEST_FILE = "throw_midrange_1.txt"
 PORT = 'COM5'
 
 
