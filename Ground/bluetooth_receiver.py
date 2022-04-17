@@ -7,7 +7,8 @@ PORT = 'COM5'
 
 
 class BluetoothReceiver:
-    def collectData(self):
+    @staticmethod
+    def collectData():
         incomingPacket = []
 
         if not TEST_MODE:
@@ -48,6 +49,7 @@ class BluetoothReceiver:
 
         return incomingPacket
 
+    @staticmethod
     def recordTestFile(self, filename):
         if not filename.endswith(".txt"):
             filename = filename + ".txt"
