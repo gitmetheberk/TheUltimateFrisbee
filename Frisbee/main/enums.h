@@ -5,5 +5,6 @@ enum states
   ready_to_collect,
   awaiting_transmission,
   collecting_initial,
-  collecting
+  collecting,
+  awaiting_gps_fix
 };

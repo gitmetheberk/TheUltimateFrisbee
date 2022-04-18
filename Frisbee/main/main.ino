@@ -17,6 +17,7 @@ Adafruit_MPU6050 MPU;
 
 dataBuffer db;
 
+// I wanted this in functions.cpp, but functions.cpp doesn't have access to fabs so... here we are
 bool checkGyroEquivalence(const mpu_data &l, const mpu_data &r)
 {
   if (fabs(l.gyroX - r.gyroX) > GYRO_EQUIVALENCE_DEADZONE)
@@ -46,8 +47,10 @@ void setup() {
 
   #if DEBUG_SERIAL
   Serial.begin(9600);
-  while (!Serial) {delay(25);}
-  Serial.println("Serial Online");
+    #if AWAIT_DEBUG_SERIAL
+    while (!Serial) {delay(25);}
+    Serial.println("Serial Online");
+    #endif
   #endif
 
   // Bluetooth init
@@ -82,49 +85,11 @@ void setup() {
   }
 
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
+  delay(50);
   GPS.sendCommand(PMTK_SET_NMEA_UPDATE_5HZ);
+  delay(50);
   GPS.sendCommand(PGCMD_ANTENNA);
-
-  // TODO Tune time to wait for fix
-  if (GPS_FIX_REQUIRED)
-  {
-    #if DEBUG_SERIAL
-    Serial.println("Waiting for GPS fix");
-    #endif
-    
-    const int loopLimit = 100;
-    for (int loop = 0; loop < loopLimit; loop++)
-    {
-      do {
-        GPS.read();
-        while (!GPS.newNMEAreceived())
-        {
-          GPS.read();
-        }
-      } while (!GPS.parse(GPS.lastNMEA()));
-
-      if (GPS.fix)
-      {
-        break;
-      }
-      else
-      {
-        delay(1000);
-      }
-    }
-
-    if (!GPS.fix)
-    {
-      errorMessage = "Unable to establish GPS fix";
-      return;
-    }
-
-    // TODO Wait for min satellites
-
-    #if DEBUG_SERIAL
-    Serial.println("GPS fix established");
-    #endif
-  }
+  delay(50);
   
   db = dataBuffer();
   
@@ -132,11 +97,13 @@ void setup() {
   Serial.println("Boot complete");
   #endif
 
+  // This is more of a user experience thing, but user's feel there time is more valuable if setup takes a short while
+  // since it's encouraging to see a light go from red to white, instead of start on white
   #if !GPS_FIX_REQUIRED
   delay(2000);
   #endif
   
-  state = ready_to_collect;
+  state = awaiting_gps_fix;
 }
 
 void loop() {
@@ -159,6 +126,68 @@ void loop() {
     delay(1000);
     digitalWrite(LED_RED, LOW);
     delay(1000);
+  }
+  else if (state == awaiting_gps_fix)
+  { 
+    if (GPS_FIX_REQUIRED)
+    {
+      digitalWrite(LED_RED, HIGH);
+      digitalWrite(LED_YELLOW, LOW);
+      digitalWrite(LED_WHITE, LOW);
+
+      do {
+          GPS.read();
+          while (!GPS.newNMEAreceived())
+          {
+            GPS.read();
+          }
+        } while (!GPS.parse(GPS.lastNMEA()));
+
+      if (!GPS.fix)
+      {
+        #if DEBUG_SERIAL
+        Serial.println("Waiting for GPS fix");
+        #endif
+  
+        #if DEBUG_BLUETOOTH
+        bluetooth.println("Waiting for GPS fix");
+        #endif
+
+        // TODO Tune time to wait for fix
+        const int loopLimit = 100;
+        for (int loop = 0; loop < loopLimit; loop++)
+        {
+          do {
+            GPS.read();
+            while (!GPS.newNMEAreceived())
+            {
+              GPS.read();
+            }
+          } while (!GPS.parse(GPS.lastNMEA()));
+    
+          if (GPS.fix && GPS.satellites >= GPS_MIN_SATELLITES)
+          {
+            break;
+          }
+          else
+          {
+            delay(1000);
+          }
+        }
+    
+        if (!GPS.fix)
+        {
+          errorMessage = "Unable to establish GPS fix";
+          state = error;
+        }
+
+        #if DEBUG_SERIAL
+        Serial.println("GPS fix established");
+        #endif
+      }
+    }
+    
+    state = ready_to_collect;
   }
   else if (state == boot)
   {
@@ -370,6 +399,6 @@ void loop() {
     }
     
     delay(5000);
-    state = ready_to_collect;
+    state = awaiting_gps_fix;
   }
 }
