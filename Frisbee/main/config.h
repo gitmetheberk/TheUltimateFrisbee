@@ -5,7 +5,6 @@
 #define DEBUG_SERIAL false
 #define AWAIT_DEBUG_SEIRAL false
 #define DEBUG_BLUETOOTH true
-#define GPS_FIX_REQUIRED true
 
 // General config
 #define MAX_BUFFER_SIZE 5000
@@ -15,6 +14,7 @@
 #define FLIGHT_TERMINATION_TOLERANCE 8
 
 // GPS Config
+#define GPS_FIX_REQUIRED true
 #define GPS_MIN_SATELLITES 4
 
 // MPU Config
