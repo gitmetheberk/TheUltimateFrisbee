@@ -3,7 +3,7 @@ import time
 import pandas as pd
 import numpy as np
 from IPython.display import display
-
+import tkinter
 DEGREES_TO_FEET = 364567.2
 
 MPU_data = []
@@ -19,7 +19,12 @@ interface = BluetoothReceiver()
 
 while True:
     data = interface.collectData()
-
+    # Make tkinter window
+    window = tkinter.Tk()
+    # Rename title of window
+    window.title("Ultimate Frisbee Data Collector")
+    # pack is used to show the object in the window
+    label = tkinter.Label(window, text = "Ultimate Firsbee Data Collector").pack()
     if data is not None:
         # if data is not none, you have received some data
 
@@ -52,6 +57,7 @@ while True:
         GPU_df['CUM_DIST'] = GPU_df['DISTANCE'].cumsum()
         display(GPU_df)
 
-        break
+        #break
 
     time.sleep(1)
+    window.mainloop()
