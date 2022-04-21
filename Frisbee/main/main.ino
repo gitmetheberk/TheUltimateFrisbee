@@ -338,7 +338,8 @@ void loop() {
         }
       
         // Transmit GPS
-        // Format: NEWDATA,HASFIX,SATELLITES,LATITUDE,LONGITUDE,SPEEDKNOTS,ALTITUDEFEET,MILLISECONDS,SECONDS,MINUTES,HOURS,MILLIS        bluetooth.print("TRANSMITTING_GPS\n");
+        // Format: NEWDATA,HASFIX,SATELLITES,LATITUDE,LONGITUDE,SPEEDKNOTS,ALTITUDEFEET,MILLISECONDS,SECONDS,MINUTES,HOURS,MILLIS        
+        bluetooth.print("TRANSMITTING_GPS\n");
         gps_data gpsData;
         
         for (int i = 0; i < currentSize; i++)
