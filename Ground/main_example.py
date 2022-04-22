@@ -17,6 +17,7 @@ from matplotlib.backends.backend_tkagg import (
 
 
 DEGREES_TO_FEET = 364567.2
+DEGREES_TO_METERS = 364567.2 * 0.3048
 
 MPU_data = []
 MPU_header = ["ACC_X","ACC_Y","ACC_Z","GYRO_X","GYRO_Y","GYRO_Z","TEMP"]
@@ -51,7 +52,7 @@ class Graph(tk.Frame):
         self.ax.set_ylabel(yLabel)
 
     def plot(self):
-        self.ax.plot(self.xData, self.yData)
+        self.ax.plot(self.xData, self.yData, color='#75bbf0')
 
     def draw(self):
         self.canvas.draw()
@@ -95,7 +96,7 @@ class App(tk.Tk):
                 GPU_df['LON_CHANGE'] = GPU_df.LONGITUDE.diff(periods=1)
                 GPU_df['LAT_CHANGE'] = GPU_df['LAT_CHANGE'].fillna(0)
                 GPU_df['LON_CHANGE'] = GPU_df['LON_CHANGE'].fillna(0)
-                GPU_df['DISTANCE'] = np.sqrt(GPU_df['LAT_CHANGE']*GPU_df['LAT_CHANGE'] + GPU_df['LON_CHANGE']*GPU_df['LON_CHANGE']).apply(lambda x: x * DEGREES_TO_FEET)
+                GPU_df['DISTANCE'] = np.sqrt(GPU_df['LAT_CHANGE']*GPU_df['LAT_CHANGE'] + GPU_df['LON_CHANGE']*GPU_df['LON_CHANGE']).apply(lambda x: x * DEGREES_TO_METERS)
                 GPU_df['CUM_DIST'] = GPU_df['DISTANCE'].cumsum()
                 display(GPU_df)
                 '''
@@ -165,6 +166,31 @@ class App(tk.Tk):
                 graphSPEED.setAxisLabels("Time (ms)", "Speed (m/s)")
                 graphSPEED.plot()
                 graphSPEED.draw()
+
+                graphDISTANCE = Graph(self, title = "Distance over time", width = 200)
+                graphDISTANCE.grid(row = 1, column =1)
+                graphDISTANCE.setData(GPU_df.MILLIS, GPU_df.CUM_DIST)
+                graphDISTANCE.setAxisLabels("Time (ms)", "Distance Traveled (m)")
+                graphDISTANCE.plot()
+                graphDISTANCE.draw()
+
+                graphMAP = Graph(self, title = "Bird's Eye View of Throw", width = 200)
+                graphMAP.grid(row = 2, column =1)
+                graphMAP.setData(GPU_df.LATITUDE, GPU_df.LONGITUDE)
+                graphMAP.setAxisLabels("Latitude", "Longitude")
+                graphMAP.ax.plot(GPU_df['LATITUDE'].iloc[0], GPU_df['LONGITUDE'].iloc[0], marker="o", markersize=7, markerfacecolor="green")
+                graphMAP.ax.plot(GPU_df['LATITUDE'].iloc[-1], GPU_df['LONGITUDE'].iloc[-1], marker="o", markersize=7, markerfacecolor="red")
+                graphMAP.ax.set_yticklabels([])
+                graphMAP.ax.set_xticklabels([])
+                graphMAP.plot()
+                graphMAP.draw()
+
+                graphELEVATION = Graph(self, title = "Elevation over time", width = 200)
+                graphELEVATION.grid(row = 1, column =2)
+                graphELEVATION.setData(GPU_df.MILLIS, GPU_df.ALTITUDE)
+                graphELEVATION.setAxisLabels("Time (ms)", "Elevation (m)")
+                graphELEVATION.plot()
+                graphELEVATION.draw()
                 break
             time.sleep(1)
             #window.mainloop()
