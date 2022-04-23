@@ -131,10 +131,6 @@ void loop() {
   { 
     if (GPS_FIX_REQUIRED)
     {
-      digitalWrite(LED_RED, HIGH);
-      digitalWrite(LED_YELLOW, LOW);
-      digitalWrite(LED_WHITE, LOW);
-
       do {
           GPS.read();
           while (!GPS.newNMEAreceived())
@@ -145,6 +141,10 @@ void loop() {
 
       if (!GPS.fix)
       {
+        digitalWrite(LED_RED, HIGH);
+        digitalWrite(LED_YELLOW, LOW);
+        digitalWrite(LED_WHITE, LOW);
+        
         #if DEBUG_SERIAL
         Serial.println("Waiting for GPS fix");
         #endif
@@ -179,6 +179,7 @@ void loop() {
         {
           errorMessage = "Unable to establish GPS fix";
           state = error;
+          return;
         }
 
         #if DEBUG_SERIAL
