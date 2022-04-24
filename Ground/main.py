@@ -84,6 +84,11 @@ class App(tk.Tk):
                 display(MPU_df)
                 GPS_df = pd.DataFrame(GPS_data, columns=GPS_HEADER)
                 GPS_df = GPS_df.apply(pd.to_numeric)
+
+                # Correct millis to 0-based
+                first_millis = GPS_df['MILLIS'][0]
+                GPS_df['MILLIS'] = GPS_df['MILLIS'].sub(first_millis)
+
                 # calculate distance thrown (feet)
                 GPS_df['LAT_CHANGE'] = GPS_df.LATITUDE.diff(periods=1)
                 GPS_df['LON_CHANGE'] = GPS_df.LONGITUDE.diff(periods=1)
